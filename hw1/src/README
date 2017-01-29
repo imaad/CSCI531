@@ -1,0 +1,24 @@
+//
+// Author : Imaad Ukaye
+// Course : CSCI-531
+// DATE   : 01/19/2017
+//
+
+To compile the code please use the make file.
+The make file supports both compile as well as clean functionality
+
+Compile:
+make
+
+Clean:
+make clean
+
+To execute the code use the following command:
+hexdump : 
+hw1 hexdump <filename>
+
+enc-base64:
+hw1 enc-base64 <filename>
+
+dec-base64:
+hw1 dec-base64 <filename>
