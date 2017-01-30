@@ -57,7 +57,7 @@ void invokeApplication(int argc, char *argv[], int msgType) {
 
 }
 
-// this function performs preprocessing, i.e. identifies the message type for the corrseesponding module to be invoked
+// this function performs preprocessing, i.e. identifies the message type for the corresponding module to be invoked
 int parseInputs(int argc, char *argv[]) {
 	char streamString[] = "stream";
 	char encryptString[] = "encrypt";
