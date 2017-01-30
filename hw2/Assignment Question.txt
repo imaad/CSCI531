@@ -1,0 +1,42 @@
+
+Assignment
+The purpose of this assignment is to get you up to speed with manipulating bits in memory and files.
+Electronic submissions only.
+
+ 
+Compiling
+Please use a Makefile so that when the grader simply enters:
+    make hw1
+an executable named hw1 is created. Please make sure that your submission conforms to other general compilation requirements.
+ 
+Commandline Syntax & Program Output
+The commandline syntax for hw1 is as follows:
+    hw1 hexdump [file]
+    hw1 enc-base64 [file]
+    hw1 dec-base64 [file]
+Square bracketed items are optional. You must follow the UNIX convention that commandline options can come in any order, if applicable. (Note: a commandline option is a commandline argument that begins with a - character in a commandline syntax specification.) If file is not specified, your program should read from stdin. File or stdin will be referred as input below. Unless otherwise specified, output of your program must go to stdout and error messages must go to stderr.
+The meaning of the commands are:
+
+hexdump	  :  	Produce a hexdump of file (or stdin).
+enc-base64	  :  	Base64 encode file (or stdin).
+dec-base64	  :  	Base64 decode file (or stdin).
+The output for various commands are as follows.
+
+hexdump	  :  	Each line in the output corresponds to 16 bytes of the input file. Here are a couple of examples.
+sample binary file (right-click on this link to save the file, you should get a GIF file 1,689 bytes in size) and its corresponding hexdump output
+sample text file and its corresponding hexdump output
+Please note that there is one space character between the address field and the first data byte. In outputing the first 8 data bytes, you must use one space character to separate each byte. This is followed by two space characters. In outputing the next 8 data bytes, you must again use one space character to separate each byte. Then follow it by two space characters and 16 ASCII characters (one for each data byte). The rules for the last 16 characters in a line is as follows.
+If the data byte is >=0x20 and <=0x7e you should use the corresponding ASCII character. If the data byte is <=0x1f or equals to 0x7f, you should print a period character. If the data byte is >=0x80 you should print a ~ character.
+
+In addition, non-existant bytes (at the end of the file) should by displayed as -- and use space characters in the right column.
+
+ 
+enc-base64	  :  	You should compare your result against the result of running the following at a command prompt:
+    openssl enc -e -base64 -in file
+Please note that each line in the output must have at most 64 characters. In addition, all output lines, except for the last one, must contain exactly 64 characters (plus a '\n' at the end).
+ 
+dec-base64	  :  	You should compare your result against the result of running the following at a command prompt:
+    openssl enc -d -base64 -in file
+Please note that you should ignore linebreaks in the input file. Even if the input is one character per line, your program should still work. Please also note that if the input file is garbage, your code must not crash!
+Pleaes output reasonable and useful error messages if the command is malformed or file does not exist or inaccessible. (You should do better than openssl.)
+To use openssl on nunki.usc.edu, please see the additional notes on openssl. But please make sure that your submission contains no reference to openssl.
