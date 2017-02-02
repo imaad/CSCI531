@@ -7,7 +7,12 @@
 #include <iostream>
 #include <string.h>
 #include <stdlib.h>
+#include "stream.h"
 
+char passPhrase[16];
+char stringLength[16];
+char strOut[16];
+int length = -1;
 void copy_string(char destination[], char source[], int skip) {
 	int c = 0;
 
@@ -24,38 +29,38 @@ char ERROR_MSG[] =
 // Performs the required functionality after decoding input arguments
 void invokeApplication(int argc, char *argv[], int msgType) {
 	char ERROR_FILENOTFOUND[] = "Input file '%s' does not exist";
+	FILE *filePointer = NULL;
 
 	// if the file name is provided in the command-line argument
 	if (msgType == 22 || msgType == 42) {
-		FILE *filePointer = NULL;
 		filePointer = fopen(argv[2], "r");
 		if (filePointer == NULL) {
 			fprintf(stderr, ERROR_FILENOTFOUND, argv[2]);
 			exit(1);
 		}
-		// Calls the required modules based on decoded inputs from the command line
-		switch (msgType) {
-		case 1:
-			break;
-		case 21:
-			break;
-		case 22:
-			break;
-		case 3:
-			break;
-		case 41:
-			break;
-		case 42:
-			break;
-		default:
-			fprintf(stderr, ERROR_MSG);
-			exit(1);
-
-		}
 	}
-	// If only 2 arguments are provided i.e. input is to be taken from stdin
+	// Calls the required modules based on decoded inputs from the command line
+	switch (msgType) {
+	case 1:
+		stream(passPhrase, length, NULL, msgType);
+		break;
+	case 21:
+		break;
+	case 22:
+		break;
+	case 3:
+		break;
+	case 41:
+		break;
+	case 42:
+		break;
+	default:
+		fprintf(stderr, ERROR_MSG);
+		exit(1);
 
+	}
 }
+// If only 2 arguments are provided i.e. input is to be taken from stdin
 
 // this function performs preprocessing, i.e. identifies the message type for the corresponding module to be invoked
 int parseInputs(int argc, char *argv[]) {
@@ -74,9 +79,7 @@ int parseInputs(int argc, char *argv[]) {
 	// identify message type
 	else {
 		if (strcmp(argv[1], streamString) == 0) {
-			char passPhrase[16];
-			char strlen[16];
-			int length = -1;
+
 			if (argc != 4) {
 				fprintf(stderr, ERROR_MSG);
 				exit(1);
@@ -86,19 +89,18 @@ int parseInputs(int argc, char *argv[]) {
 					copy_string(passPhrase, argv[i], 3);
 
 				} else if (strncmp(argv[i], "-l=", 3) == 0) {
-					copy_string(strlen, argv[i], 3);
-					length = atoi(strlen);
+					copy_string(stringLength, argv[i], 3);
+					length = atoi(stringLength);
 				} else {
 					fprintf(stderr, ERROR_MSG);
 					exit(1);
 				}
 			}
 			printf("Pass: %s\n", passPhrase);
-			printf("Length :%d", length);
+			printf("Length :%d\n", length);
 			msg_type = 1;
 		} else if (strcmp(argv[1], encryptString) == 0) {
 			char passPhrase[16];
-			char strOut[16];
 
 			if (argc < 4 || argc > 5) {
 				fprintf(stderr, ERROR_MSG);
@@ -146,9 +148,9 @@ int main(int argc, char *argv[]) {
 	printf("ARGC: %d\n", argc);
 
 	int msg_type = parseInputs(argc, argv);
-//Load the corresponding module based on Input arguments
-//invokeApplication(argc, argv, msg_type);
-	printf("%d", msg_type);
+	//Load the corresponding module based on Input arguments
+	printf("The message Type is : %d\n", msg_type);
+	invokeApplication(argc, argv, msg_type);
 
 	return 0;
 }
