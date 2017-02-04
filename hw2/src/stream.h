@@ -11,4 +11,4 @@
 #define byteLength MD5_DIGEST_LENGTH/2
 
 // A simple stream cipher; outputs 'len' bytes of MD5 stream cipher
-void stream(char *pphrase, int len, unsigned char *out_buf,int msg_type);
+void stream(char *pphrase, int len,int msg_type, unsigned char *out_buf);

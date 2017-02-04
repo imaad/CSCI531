@@ -9,51 +9,47 @@
 #include <openssl/md5.h>
 
 // A simple stream cipher; outputs 'len' bytes of MD5 stream cipher
-void stream(char *pphrase, int streamlength, unsigned char out_buf[],
-		int msg_type) {
+void stream(char *pphrase, int len, int msg_type, unsigned char *out_buf) {
 
+	int i = 0;
 	unsigned char md5_buf[MD5_DIGEST_LENGTH];
 	int str_len = strlen(pphrase) + 2 + MD5_DIGEST_LENGTH;
-	int byteLength = 8;
 	char *s = (char*) malloc(str_len + 1);
-	int i = 0;
-	int outputByte = 0;
+	int bytes_out = 0;
 
-	unsigned char *outputBuffer = out_buf;
-
+	unsigned char* out_ptr = out_buf;
 	// Initial MD5 hash of passphrase
 	MD5((const unsigned char *) pphrase, strlen(pphrase), md5_buf);
 	for (;;) {
+		int byteLength = 8;
+		if (len <= 0)
+			break;
 		// Assemble iteration key into buffer s
 		// {Previous MD5 Hash} + {[00,99]} + {passphrase}
-		if (streamlength <= 0)
-			break;
 		sprintf(&s[MD5_DIGEST_LENGTH], "%02d%s", i, pphrase);
-
 		memcpy(s, md5_buf, MD5_DIGEST_LENGTH);
 
 		// Take MD5 hash of this iteration key
 		MD5((const unsigned char *) s, str_len, md5_buf);
 
-		int byteDiff = streamlength - byteLength;
 		// How many bytes to print (up to 8)?
-		if (byteDiff < 0) {
-			streamlength = 0;
-			outputByte = streamlength;
+		int outputByteLength = len - byteLength;
+		if (outputByteLength >= 0) {
+			bytes_out = byteLength;
+			len = outputByteLength;
 		} else {
-			outputByte = byteLength;
-			streamlength = byteDiff;
-
+			bytes_out = len;
+			len = 0;
 		}
 
 		// Determine location of output (stdout or out_buf)
 		if (msg_type == 1) {
 			// Default behavior if 'stream' prog is run
-			fwrite(md5_buf, 1, outputByte, stdout);
+			fwrite(md5_buf, 1, bytes_out, stdout);
 		} else {
 			// Print output to out_buf instead for PBM encryption
-			memcpy(outputBuffer, md5_buf, outputByte);
-			outputBuffer += outputByte;
+			memcpy(out_ptr, md5_buf, bytes_out);
+			out_ptr += bytes_out;
 		}
 
 		// Reset the middle int value if needed
@@ -62,7 +58,7 @@ void stream(char *pphrase, int streamlength, unsigned char out_buf[],
 	}
 	free(s);
 
-// PSEUDO-CODE
+	// PSEUDO-CODE
 	// - Allocate enough memory to hold the whole stream cipher
 	// - Take the MD5 hash of the original passphrase
 	// - Concat this hash string with an integer {0-99}, and the passphrase again

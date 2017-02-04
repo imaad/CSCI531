@@ -42,7 +42,7 @@ void invokeApplication(int argc, char *argv[], int msgType) {
 	// Calls the required modules based on decoded inputs from the command line
 	switch (msgType) {
 	case 1:
-		stream(passPhrase, length, NULL, msgType);
+		stream(passPhrase, length,msgType,NULL);
 		break;
 	case 21:
 		break;
@@ -96,8 +96,8 @@ int parseInputs(int argc, char *argv[]) {
 					exit(1);
 				}
 			}
-			printf("Pass: %s\n", passPhrase);
-			printf("Length :%d\n", length);
+			//printf("Pass: %s\n", passPhrase);
+			//printf("Length :%d\n", length);
 			msg_type = 1;
 		} else if (strcmp(argv[1], encryptString) == 0) {
 			char passPhrase[16];
@@ -117,8 +117,8 @@ int parseInputs(int argc, char *argv[]) {
 					exit(1);
 				}
 			}
-			printf("Pass: %s\n", passPhrase);
-			printf("Out: %s\n", strOut);
+			//printf("Pass: %s\n", passPhrase);
+			//printf("Out: %s\n", strOut);
 			if (argc == 4)
 				msg_type = 21;
 			else
@@ -145,11 +145,11 @@ int parseInputs(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
 
 //Look for correct command line arguments
-	printf("ARGC: %d\n", argc);
+	//printf("ARGC: %d\n", argc);
 
 	int msg_type = parseInputs(argc, argv);
 	//Load the corresponding module based on Input arguments
-	printf("The message Type is : %d\n", msg_type);
+	//printf("The message Type is : %d\n", msg_type);
 	invokeApplication(argc, argv, msg_type);
 
 	return 0;
