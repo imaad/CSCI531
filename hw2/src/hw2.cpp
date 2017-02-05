@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "stream.h"
+#include "encrypt.h"
 
 char passPhrase[16];
 char stringLength[16];
@@ -32,21 +33,25 @@ void invokeApplication(int argc, char *argv[], int msgType) {
 	FILE *filePointer = NULL;
 
 	// if the file name is provided in the command-line argument
-	if (msgType == 22 || msgType == 42) {
-		filePointer = fopen(argv[2], "r");
+	if (msgType == 21) {
+		filePointer = stdin;
+	} else if (msgType == 22) {
+		filePointer = fopen(argv[4], "r");
 		if (filePointer == NULL) {
-			fprintf(stderr, ERROR_FILENOTFOUND, argv[2]);
+			fprintf(stderr, ERROR_FILENOTFOUND, argv[4]);
 			exit(1);
 		}
 	}
 	// Calls the required modules based on decoded inputs from the command line
 	switch (msgType) {
 	case 1:
-		stream(passPhrase, length,msgType,NULL);
+		stream(passPhrase, length, msgType, NULL);
 		break;
 	case 21:
+		encrypt(passPhrase, strOut, filePointer, msgType);
 		break;
 	case 22:
+		encrypt(passPhrase, strOut, filePointer, msgType);
 		break;
 	case 3:
 		break;
@@ -100,7 +105,6 @@ int parseInputs(int argc, char *argv[]) {
 			//printf("Length :%d\n", length);
 			msg_type = 1;
 		} else if (strcmp(argv[1], encryptString) == 0) {
-			char passPhrase[16];
 
 			if (argc < 4 || argc > 5) {
 				fprintf(stderr, ERROR_MSG);
