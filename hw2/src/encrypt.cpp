@@ -43,13 +43,11 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 	unsigned char keyMask = 0x80;
 	unsigned char* inputBuffer;
 	unsigned char* keyBuffer;
-	int inputBufferIndex=0;
-	int keyBufferIndex=0;
+	int inputBufferIndex = 0;
+	int keyBufferIndex = 0;
 
-	unsigned short fstor1[2]; // = (unsigned int*)malloc(4 * sizeof(char));	// Four bytes to store bits (2 for each new row)
-	unsigned short fstor2[2]; // = (unsigned int*)malloc(4 * sizeof(char));
-	unsigned int f1 = 0x00000000;
-	unsigned int f2 = 0x00000000;
+	unsigned int f1;
+	unsigned int f2;
 	unsigned char row_out1[(2 * width + 7) / 8][2]; // Function computes ceiling (2*width)/8 in bytes
 	unsigned char row_out2[(2 * width + 7) / 8][2];
 	// Iterate through each row of the PBM file
@@ -69,10 +67,10 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 		for (int widthIndex = 0; widthIndex < (width + 7) / 8; widthIndex++) {
 
 			// Reset the encrypted bits for new file
-			fstor1[0] = 0x0000;
-			fstor1[1] = 0x0000;
-			fstor2[0] = 0x0000;
-			fstor2[1] = 0x0000;
+			f1 = 0x00000000;
+			f2 = 0x00000000;
+
+
 			// Iterate through each bit of every byte in the row
 			unsigned int whiteMask = 0x4000; // 0100 0000 0000 0000
 			unsigned int bigMask = 0x8000; // 1000 0000 0000 0000
@@ -86,35 +84,50 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 					}
 				} else {
 					// Identify whether the current bit is a 1 or 0
-					if ((unsigned int) ((inputBuffer[inputBufferIndex] & inputMask)) > 0) {
+					if ((unsigned int) ((inputBuffer[inputBufferIndex]
+							& inputMask)) > 0) {
 						// Black pixel
-						if ((unsigned int) ((keyBuffer[keyBufferIndex] & keyMask)) > 0) {
+						if ((unsigned int) ((keyBuffer[keyBufferIndex] & keyMask))
+								> 0) {
 							// Black pixel, key=1
-							fstor1[0] = fstor1[0] | whiteMask;
-							fstor1[1] = fstor1[1] | bigMask;
-							fstor2[0] = fstor2[0] | bigMask;
-							fstor2[1] = fstor2[1] | whiteMask;
+							f1 = ((((f1 & 0xffff0000) >> 16) | whiteMask) << 16)
+									| f1;
+							f1 = ((((f1 & 0x0000ffff)) | bigMask)) | f1;
+							f2 = ((((f2 & 0xffff0000) >> 16) | bigMask) << 16)
+									| f2;
+							f2 = ((((f2 & 0x0000ffff)) | whiteMask)) | f2;
 						} else {
 							// Black pixel, key=0
-							fstor1[0] = fstor1[0] | bigMask;
-							fstor1[1] = fstor1[1] | whiteMask;
-							fstor2[0] = fstor2[0] | whiteMask;
-							fstor2[1] = fstor2[1] | bigMask;
+							f1 = ((((f1 & 0xffff0000) >> 16) | bigMask) << 16)
+									| f1;
+							f1 = ((((f1 & 0x0000ffff)) | whiteMask)) | f1;
+
+							f2 = ((((f2 & 0xffff0000) >> 16) | whiteMask) << 16)
+									| f2;
+							f2 = ((((f2 & 0x0000ffff)) | bigMask)) | f2;
 						}
 					} else {
 						// White pixel
-						if ((unsigned int) ((keyBuffer[keyBufferIndex] & keyMask)) > 0) {
+						if ((unsigned int) ((keyBuffer[keyBufferIndex] & keyMask))
+								> 0) {
 							// White pixel, key=1
-							fstor1[0] = fstor1[0] | whiteMask;
-							fstor1[1] = fstor1[1] | bigMask;
-							fstor2[0] = fstor2[0] | whiteMask;
-							fstor2[1] = fstor2[1] | bigMask;
+							f1 = ((((f1 & 0xffff0000) >> 16) | whiteMask) << 16)
+									| f1;
+							f1 = ((((f1 & 0x0000ffff)) | bigMask)) | f1;
+
+							f2 = ((((f2 & 0xffff0000) >> 16) | whiteMask) << 16)
+									| f2;
+							f2 = ((((f2 & 0x0000ffff)) | bigMask)) | f2;
+
 						} else {
 							// White pixel, key=0
-							fstor1[0] = fstor1[0] | bigMask;
-							fstor1[1] = fstor1[1] | whiteMask;
-							fstor2[0] = fstor2[0] | bigMask;
-							fstor2[1] = fstor2[1] | whiteMask;
+							f1 = ((((f1 & 0xffff0000) >> 16) | bigMask) << 16)
+									| f1;
+							f1 = ((((f1 & 0x0000ffff)) | whiteMask)) | f1;
+							f2 = ((((f2 & 0xffff0000) >> 16) | bigMask) << 16)
+									| f2;
+							f2 = ((((f2 & 0x0000ffff)) | whiteMask)) | f2;
+
 						}
 					}
 					// Update key mask
@@ -133,25 +146,26 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 				bigMask = bigMask >> 2;
 			}
 			unsigned char byteOne;
+
 			unsigned char byteTwo;
-			byteOne = (fstor1[0] >> 8) & 0xff;
-			byteTwo = 0xff & fstor1[0];
+			byteOne = (f1 >> 24);
+			byteTwo = (f1 >> 16);
 			// Save char values from the shorts in correct order, based on endianness
 			row_out1[index][0] = byteOne;
 			row_out1[index + 1][0] = byteTwo;
 
-			byteOne = (fstor1[1] >> 8) & 0xff;
-			byteTwo = 0xff & fstor1[1];
+			byteOne = ((f1 & 0x0000ffff) >> 8) & 0xff;
+			byteTwo = ((f1 & 0x0000ffff)) & 0xff;
 			row_out1[index][1] = byteOne;
 			row_out1[index + 1][1] = byteTwo;
 
-			byteOne = (fstor2[0] >> 8) & 0xff;
-			byteTwo = 0xff & fstor2[0];
+			byteOne = (f2 >> 24);
+			byteTwo = (f2 >> 16);
 			row_out2[index][0] = byteOne;
 			row_out2[index + 1][0] = byteTwo;
 
-			byteOne = (fstor2[1] >> 8) & 0xff;
-			byteTwo = 0xff & fstor2[1];
+			byteOne = ((f2 & 0x0000ffff) >> 8) & 0xff;
+			byteTwo = ((f2 & 0x0000ffff)) & 0xff;
 			row_out2[index][1] = byteOne;
 			row_out2[index + 1][1] = byteTwo;
 
@@ -210,12 +224,6 @@ void encrypt(char *pphrase, char *outputFileName, FILE *pnbFile, int msg_type) {
 	long inputbufferSize =
 			(width % 8 == 0) ?
 					(height * width / 8) : (height * (width / 8 + 1));
-	if (testing) {
-		printf("Width = %ld\n", width);
-		printf("Height = %ld\n", height);
-		printf("BufferSize = %ld\n", inputbufferSize);
-
-	}
 	// Read all data from input file
 	if (width % 8 == 0) {
 		in_buf = new unsigned char[inputbufferSize];
@@ -233,8 +241,5 @@ void encrypt(char *pphrase, char *outputFileName, FILE *pnbFile, int msg_type) {
 	open_files(outputFileName, in_buf, key_buf, width, height);
 
 // Free up the big memory buffers used
-	delete[] in_buf;
-	delete[] key_buf;
-	delete[] temp_buf;
 
 }
