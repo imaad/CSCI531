@@ -16,7 +16,7 @@ void printString(unsigned char str[])
 {
 	int i=0;
 	while(str[i]!='\0'){
-		printf("%02x ",str[i]);
+		printf("%c",str[i]);
 	i++;
 	}
 	printf("\n");
@@ -51,10 +51,10 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char *in_buf,
 	fprintf(fout2, "P4\n");
 	fprintf(fout2, "%d %d\n", width * 2, height * 2);
 
-	printf("INP: ");
-	printString(curr_in);
-	printf("KEY: ");
-	printString(curr_key);
+	//printf("INP: ");
+	//printString(curr_in);
+	//printf("KEY: ");
+	//printString(curr_key);
 	for (int heightIndex = 0; heightIndex < height; heightIndex++) {
 
 		// Iterate through each column, byte-wise
