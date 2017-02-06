@@ -39,10 +39,13 @@ void generateFileNames(char* outputFileName, char** outputFileOne,
 }
 void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 		unsigned char* key_buf, int width, int height) {
-	unsigned char mask_in = 0x80;
-	unsigned char mask_key = 0x80;
-	unsigned char* curr_in;
-	unsigned char* curr_key;
+	unsigned char inputMask = 0x80;
+	unsigned char keyMask = 0x80;
+	unsigned char* inputBuffer;
+	unsigned char* keyBuffer;
+	int inputBufferIndex=0;
+	int keyBufferIndex=0;
+
 	unsigned short fstor1[2]; // = (unsigned int*)malloc(4 * sizeof(char));	// Four bytes to store bits (2 for each new row)
 	unsigned short fstor2[2]; // = (unsigned int*)malloc(4 * sizeof(char));
 	unsigned int f1 = 0x00000000;
@@ -50,8 +53,8 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 	unsigned char row_out1[(2 * width + 7) / 8][2]; // Function computes ceiling (2*width)/8 in bytes
 	unsigned char row_out2[(2 * width + 7) / 8][2];
 	// Iterate through each row of the PBM file
-	curr_in = (unsigned char*) (in_buf);
-	curr_key = (unsigned char*) (key_buf);
+	inputBuffer = (unsigned char*) (in_buf);
+	keyBuffer = (unsigned char*) (key_buf);
 	fprintf(fout1, "P4\n");
 	fprintf(fout1, "%d %d\n", width * 2, height * 2);
 	fprintf(fout2, "P4\n");
@@ -62,8 +65,8 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 	//printString(curr_key);
 	for (int heightIndex = 0; heightIndex < height; heightIndex++) {
 		// Iterate through each column, byte-wise
-		int index=0;
-		for (int j = 0; j < (width + 7) / 8; j++) {
+		int index = 0;
+		for (int widthIndex = 0; widthIndex < (width + 7) / 8; widthIndex++) {
 
 			// Reset the encrypted bits for new file
 			fstor1[0] = 0x0000;
@@ -74,18 +77,18 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 			unsigned int whiteMask = 0x4000; // 0100 0000 0000 0000
 			unsigned int bigMask = 0x8000; // 1000 0000 0000 0000
 			for (int k = 0; k < 8; k++) {
-				if ((j * 8 + k) >= width) {
+				if ((widthIndex * 8 + k) >= width) {
 					if (k == 4) {
 						// Printing don't cares from the start, just skip this byte
-						curr_in++;
-						mask_in = 0x80;
+						inputBufferIndex++;
+						inputMask = 0x80;
 						break;
 					}
 				} else {
 					// Identify whether the current bit is a 1 or 0
-					if ((unsigned int) ((*curr_in & mask_in)) > 0) {
+					if ((unsigned int) ((inputBuffer[inputBufferIndex] & inputMask)) > 0) {
 						// Black pixel
-						if ((unsigned int) ((*curr_key & mask_key)) > 0) {
+						if ((unsigned int) ((keyBuffer[keyBufferIndex] & keyMask)) > 0) {
 							// Black pixel, key=1
 							fstor1[0] = fstor1[0] | whiteMask;
 							fstor1[1] = fstor1[1] | bigMask;
@@ -100,7 +103,7 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 						}
 					} else {
 						// White pixel
-						if ((unsigned int) ((*curr_key & mask_key)) > 0) {
+						if ((unsigned int) ((keyBuffer[keyBufferIndex] & keyMask)) > 0) {
 							// White pixel, key=1
 							fstor1[0] = fstor1[0] | whiteMask;
 							fstor1[1] = fstor1[1] | bigMask;
@@ -115,16 +118,16 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 						}
 					}
 					// Update key mask
-					mask_key = mask_key >> 1;
-					if (mask_key == 0) {
-						curr_key++;
-						mask_key = 0x80;
+					keyMask = keyMask >> 1;
+					if (!(keyMask & 0xff)) {
+						keyBufferIndex++;
+						keyMask = 0x80;
 					}
 				}
-				mask_in = mask_in >> 1;
-				if (mask_in == 0) {
-					curr_in++;
-					mask_in = 0x80;
+				inputMask = inputMask >> 1;
+				if (!(inputMask & 0xff)) {
+					inputBufferIndex++;
+					inputMask = 0x80;
 				}
 				whiteMask = whiteMask >> 2;
 				bigMask = bigMask >> 2;
@@ -135,7 +138,7 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 			byteTwo = 0xff & fstor1[0];
 			// Save char values from the shorts in correct order, based on endianness
 			row_out1[index][0] = byteOne;
-			row_out1[index+1][0] = byteTwo;
+			row_out1[index + 1][0] = byteTwo;
 
 			byteOne = (fstor1[1] >> 8) & 0xff;
 			byteTwo = 0xff & fstor1[1];
@@ -152,7 +155,7 @@ void splitFiles(FILE* fout1, FILE* fout2, unsigned char* in_buf,
 			row_out2[index][1] = byteOne;
 			row_out2[index + 1][1] = byteTwo;
 
-			index+=2;
+			index += 2;
 		}
 		// Output the two rows to each file
 		print_rowout(fout1, row_out1, (2 * width + 7) / 8);
