@@ -13,5 +13,4 @@
 // A simple stream cipher; outputs 'len' bytes of MD5 stream cipher
 void encrypt(char *pphrase, char *out, FILE *pnbFile, int msg_type);
 
-// Take bits read from input file, encrypt them with key_buf, and spit to new files
 

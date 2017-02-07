@@ -9,10 +9,12 @@
 #include <stdlib.h>
 #include "stream.h"
 #include "encrypt.h"
+#include "merge.h"
 
 char passPhrase[16];
 char stringLength[16];
 char strOut[16];
+char* mergeOutputFileName;
 int length = -1;
 void copy_string(char destination[], char source[], int skip) {
 	int c = 0;
@@ -30,17 +32,31 @@ char ERROR_MSG[] =
 // Performs the required functionality after decoding input arguments
 void invokeApplication(int argc, char *argv[], int msgType) {
 	char ERROR_FILENOTFOUND[] = "Input file '%s' does not exist";
-	FILE *filePointer = NULL;
-
+	FILE *filePointerOne = NULL;
+	FILE *filePointerTwo = NULL;
+	memset(strOut,0,16);
 	// if the file name is provided in the command-line argument
 	if (msgType == 21) {
-		filePointer = stdin;
+		filePointerOne = stdin;
 	} else if (msgType == 22) {
-		filePointer = fopen(argv[4], "r");
-		if (filePointer == NULL) {
+		filePointerOne = fopen(argv[4], "r");
+		if (filePointerOne == NULL) {
 			fprintf(stderr, ERROR_FILENOTFOUND, argv[4]);
 			exit(1);
 		}
+	} else if (msgType == 3) {
+		filePointerOne = fopen(argv[2], "r");
+		if (filePointerOne == NULL) {
+			fprintf(stderr, ERROR_FILENOTFOUND, argv[2]);
+			exit(1);
+		}
+
+		filePointerTwo = fopen(argv[3], "r");
+		if (filePointerOne == NULL) {
+			fprintf(stderr, ERROR_FILENOTFOUND, argv[3]);
+			exit(1);
+		}
+
 	}
 	// Calls the required modules based on decoded inputs from the command line
 	switch (msgType) {
@@ -48,12 +64,13 @@ void invokeApplication(int argc, char *argv[], int msgType) {
 		stream(passPhrase, length, msgType, NULL);
 		break;
 	case 21:
-		encrypt(passPhrase, strOut, filePointer, msgType);
+		encrypt(passPhrase, strOut, filePointerOne, msgType);
 		break;
 	case 22:
-		encrypt(passPhrase, strOut, filePointer, msgType);
+		encrypt(passPhrase, strOut, filePointerOne, msgType);
 		break;
 	case 3:
+		merge(filePointerOne,filePointerTwo,msgType);
 		break;
 	case 41:
 		break;
