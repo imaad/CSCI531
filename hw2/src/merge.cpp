@@ -1,3 +1,8 @@
+//
+// Author : Imaad Ukaye
+// Course : CSCI-531
+// DATE   : 01/2 9/2017
+//
 #include <string.h>
 #include <stdlib.h>
 #include<iostream>

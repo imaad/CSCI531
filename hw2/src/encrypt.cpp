@@ -1,7 +1,7 @@
 //
 // Author : Imaad Ukaye
 // Course : CSCI-531
-// DATE   : 01/2 9/2017
+// DATE   : 01/29/2017
 //
 #include <stdio.h>
 #include <string.h>
@@ -208,7 +208,7 @@ void encrypt(char *pphrase, char *outputFileName, FILE *pnbFile, int msg_type) {
 
 	// Make sure the magic number (P4) of the PBM file is correct
 	fgets(fileHeader, 3, pnbFile);
-	printf("%s", fileHeader);
+	//printf("%s", fileHeader);
 	if (0 != strcmp(fileHeader, "P4")) {
 		// Incorrect magic number
 		fprintf(stderr, "ERROR: invalid PBM file for input.\n");
