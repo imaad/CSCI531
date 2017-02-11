@@ -8,12 +8,13 @@
 #include<iostream>
 #include "merge.h"
 
-// Take in 2 encrypted PBM files, bitwise OR them, write to fout
-
+// Generates an error when unexpected inputs arrive
 void throwMergeError(char str[]) {
 	fprintf(stderr, str);
 	exit(1);
 }
+
+// Combines two PBM files by using OR and writes to stdout
 void combineInputs(FILE *filePointerOne, FILE *filePointerTwo, int width,
 		int height) {
 	unsigned char *val1 = new unsigned char[2];
@@ -26,19 +27,22 @@ void combineInputs(FILE *filePointerOne, FILE *filePointerTwo, int width,
 	// Iterate through all rows and columns
 	int i = 0;
 	while (i < height * ((width + 7) / 8)) {
-		// Read one byte from each file
+		// Read data from files
 		fread(val1, 1, 1, filePointerOne);
 		fread(val2, 1, 1, filePointerTwo);
+		// print Output equals 'OR' of two input bytes
 		printf("%c", val1[0] | val2[0]);
 		i++;
 	}
+	// free space
 	delete (val1);
 	delete (val2);
 }
 
-// Merge 2 PBM files and create an output file
-void merge(FILE *in1, FILE *in2, int msg_type) {
+// Merge 2 PBM files into a single output file
+void merge(FILE *filePointerOne, FILE *filePointerTwo, int msg_type) {
 
+	// Local Variable declaration
 	int width1;
 	int height1;
 	int width2;
@@ -47,28 +51,28 @@ void merge(FILE *in1, FILE *in2, int msg_type) {
 	char *temp_buf = new char[15];
 	char *fileHeader = new char[3];
 
-	// Make sure the magic number (P4) of both PBM files is correct
-	fgets(fileHeader, 3, in1);
+	// Header Validation
+	fgets(fileHeader, 3, filePointerOne);
 	if (strcmp(fileHeader, "P4") != 0) {
 		// Invalid Header
 		throwMergeError((char*) "File1 : Invalid Header Information\n");
 	}
 	// remove \n
-	fgets(fileHeader, 2, in1);
+	fgets(fileHeader, 2, filePointerOne);
 
-	fgets(fileHeader, 3, in2);
+	fgets(fileHeader, 3, filePointerTwo);
 	if (strcmp(fileHeader, "P4") != 0) {
 		// Invalid Header
 		throwMergeError((char*) "File2 : Invalid Header Information\n");
 	}
 	// remove \n
-	fgets(fileHeader, 2, in2);
+	fgets(fileHeader, 2, filePointerTwo);
 
-	// Read height/width values from PBM file
-	fgets(temp_buf, 15, in1);
+	// Read height/width values from the files and validate
+	fgets(temp_buf, 15, filePointerOne);
 	width1 = (int) strtol(temp_buf, &temp_buf, baseInt);
 	height1 = (int) strtol(temp_buf, NULL, baseInt);
-	fgets(temp_buf, 15, in2);
+	fgets(temp_buf, 15, filePointerTwo);
 	width2 = (int) strtol(temp_buf, &temp_buf, baseInt);
 	height2 = (int) strtol(temp_buf, NULL, baseInt);
 	if (width1 != width2 || height1 != height2) {
@@ -76,7 +80,7 @@ void merge(FILE *in1, FILE *in2, int msg_type) {
 		throwMergeError((char*) "Height or Width in the files do not match");
 	}
 
-	// Merge all the bits together and write to fout
-	combineInputs(in1, in2, width1, height1);
+	// OR both inputs to get the merged file
+	combineInputs(filePointerOne, filePointerTwo, width1, height1);
 
 }

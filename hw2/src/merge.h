@@ -9,12 +9,11 @@
 #include <stdio.h>
 #include <string.h>
 
-// Take in 2 encrypted PBM files, bitwise OR them, write to fout
-void combineInputs(FILE *fin1, FILE *fin2, int width, int height);
-
-// Merge 2 PBM files and create an output file
-void merge(FILE *in1, FILE *in2, int msg_type);
-
+// Combines two PBM files and write to stdout
+void combineInputs(FILE *filePointerOne, FILE *filePointerTwo, int width, int height);
+// Merge 2 PBM files into a single output file
+void merge(FILE *filePointerOne, FILE *filePointerTwo, int msg_type);
+// Generates an error when unexpected inputs arrive
 void throwMergeError(char str[]);
 
 #endif
