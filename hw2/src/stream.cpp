@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <openssl/md5.h>
 
-// A simple stream cipher; outputs 'len' bytes of MD5 stream cipher
+// Generates a keystream derieved from the passcode of length streamLength
 void stream(char *p, int streamlength, int msg_type,
 		unsigned char *encryptionBuffer) {
 
@@ -21,8 +21,8 @@ void stream(char *p, int streamlength, int msg_type,
 	int outputByte = 0;
 
 	int i = 0;
-	unsigned char* out_ptr = encryptionBuffer;
-	// Initial MD5 hash of passphrase
+	unsigned char* encryptionBufferPointer = encryptionBuffer;
+	// MD5 hash of the passphrase
 	MD5((const unsigned char *) p, strlen(p), md5_buf);
 	for (;;) {
 		int byteLength = 8;
@@ -31,10 +31,10 @@ void stream(char *p, int streamlength, int msg_type,
 		sprintf(&s[MD5_DIGEST_LENGTH], "%02d%s", i, p);
 		memcpy(s, md5_buf, MD5_DIGEST_LENGTH);
 
-		// Take MD5 hash of this iteration key
+		// Intermediate MD5 Hash
 		MD5((const unsigned char *) s, len, md5_buf);
 
-		// How many bytes to print (up to 8)?
+		// Check of it is the last byte
 		int outputByteLength = streamlength - byteLength;
 		if (outputByteLength >= 0) {
 			outputByte = byteLength;
@@ -44,14 +44,14 @@ void stream(char *p, int streamlength, int msg_type,
 			streamlength = 0;
 		}
 
-		// Determine location of output (stdout or out_buf)
+		// Decide the output mode based on msg_type
 		if (msg_type == 1) {
-			// Default behavior if 'stream' prog is run
+			// stdout if stream submodule is called
 			fwrite(md5_buf, 1, outputByte, stdout);
 		} else {
-			// Print output to out_buf instead for PBM encryption
-			memcpy(out_ptr, md5_buf, outputByte);
-			out_ptr += outputByte;
+			// fill encryptionBuffer with the stream
+			memcpy(encryptionBufferPointer, md5_buf, outputByte);
+			encryptionBufferPointer = encryptionBufferPointer + outputByte;
 		}
 
 		// Reset the middle int value if needed

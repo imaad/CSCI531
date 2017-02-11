@@ -11,4 +11,4 @@
 #define byteLength MD5_DIGEST_LENGTH/2
 
 // Generates len Byte key for encryption derieved from p
-void stream(char *p, int len, int msg_type, unsigned char *out_buf);
+void stream(char *p, int streamlength, int msg_type, unsigned char *encryptionBuffer);

@@ -9,6 +9,7 @@
 #include "stream.h"
 #include <iostream>
 
+//testing mode flag
 bool testing = true;
 
 void printString(unsigned char str[]) {
