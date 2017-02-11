@@ -41,6 +41,8 @@ void generateFileNames(char* outputFileName, char** outputFileOne,
 	strcat(*outputFileOne, ".1.pbm");
 	strcat(*outputFileTwo, ".2.pbm");
 }
+
+//Generates the encrypted data in the files
 void generateDataFiles(FILE* filePointerOne, FILE* filePointerTwo,
 		unsigned char* inputStreamBuffer, unsigned char* keyStreamBuffer,
 		int width, int height) {
